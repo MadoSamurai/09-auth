@@ -1,43 +1,55 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { cookies } from "next/headers";
 import { checkSessionServer } from "@/lib/api/serverApi";
-
-const privateRoutes = ["/profile", "/notes"];
-const publicRoutes = ["/sign-in", "/sign-up"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const cookieStore = request.cookies;
 
-  const cookieStore = await cookies();
-  let accessToken = cookieStore.get("accessToken")?.value;
+  const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
+
+  const isAuthRoute =
+    pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
+  const isPrivateRoute = pathname.startsWith("/profile");
+
+  let isAuthenticated = !!accessToken;
+
+  let response = NextResponse.next();
 
   if (!accessToken && refreshToken) {
     try {
-      const user = await checkSessionServer();
-      if (user) {
-        accessToken = "active";
+      const res = await checkSessionServer();
+      if (res && res.status === 200) {
+        isAuthenticated = true;
+
+        const setCookieHeader = res.headers["set-cookie"];
+        if (setCookieHeader) {
+          if (Array.isArray(setCookieHeader)) {
+            setCookieHeader.forEach((cookie) => {
+              response.headers.append("set-cookie", cookie);
+            });
+          } else {
+            response.headers.set("set-cookie", setCookieHeader);
+          }
+        }
       }
-    } catch (error) {
-      console.error("Session check failed in proxy:", error);
+    } catch {
+      isAuthenticated = false;
     }
   }
 
-  const isPrivate = privateRoutes.some((route) => pathname.startsWith(route));
-  const isPublic = publicRoutes.some((route) => pathname.startsWith(route));
+  if (isAuthRoute && (isAuthenticated || accessToken)) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
 
-  if (isPrivate && !accessToken) {
+  if (isPrivateRoute && !isAuthenticated && !accessToken) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  if (isPublic && accessToken) {
-    return NextResponse.redirect(new URL("/profile", request.url));
-  }
-
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
-  matcher: ["/profile/:path*", "/notes/:path*", "/sign-in", "/sign-up"],
+  matcher: ["/profile/:path*", "/sign-in", "/sign-up"],
 };
