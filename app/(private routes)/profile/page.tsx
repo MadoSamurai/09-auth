@@ -5,7 +5,7 @@ import { getMeServer } from "@/lib/api/serverApi";
 import css from "./ProfilePage.module.css";
 
 export const metadata: Metadata = {
-  title: "NoteHub - Profile Page",
+  title: "NoteHub - Profile",
   description: "User profile page",
 };
 
