@@ -1,12 +1,15 @@
 "use client";
-import { useAuthStore } from "@/lib/store/authStore";
+
 import css from "./EditProfilePage.module.css";
-import { useEffect, useState } from "react";
+import { useAuthStore } from "@/lib/store/authStore";
+import { updateMe, getMe } from "@/lib/api/clientApi";
+import { useEffect, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function EditProfilePage() {
   const user = useAuthStore((state) => state.user);
-  const updateUser = useAuthStore((state) => state.updateUser);
+  const setUser = useAuthStore((state) => state.setUser);
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
@@ -14,14 +17,24 @@ export default function EditProfilePage() {
   useEffect(() => {
     if (user?.username) {
       setUsername(user.username);
+    } else {
+      getMe().then((data) => {
+        if (data) {
+          setUser(data);
+          setUsername(data.username);
+        }
+      });
     }
-  }, [user]);
+  }, [user, setUser]);
 
-  const handleSubmit = async (e: React.SyntheticEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
       setError("");
-      await updateUser({ username });
+      const updatedUser = await updateMe({ username });
+      if (updatedUser) {
+        setUser(updatedUser);
+      }
       router.push("/profile");
     } catch {
       setError("Error updating profile. Please try again.");
@@ -33,7 +46,7 @@ export default function EditProfilePage() {
       <div className={css.profileCard}>
         <h1 className={css.formTitle}>Edit Profile</h1>
 
-        <img
+        <Image
           src={user?.avatar || "https://placehold.co/120"}
           alt="User Avatar"
           width={120}

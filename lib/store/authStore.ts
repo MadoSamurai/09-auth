@@ -1,4 +1,3 @@
-// lib/store/authStore.ts
 import { create } from "zustand";
 import { User } from "@/types/user";
 import {
@@ -22,7 +21,7 @@ interface AuthState {
   updateUser: (userData: { username: string }) => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>()((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: true,
@@ -48,10 +47,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true });
-      const session = await checkSession(); // Проверяем валидность сессии ({ success: true })
+      const session = await checkSession();
 
       if (session) {
-        // Если сессия ок, забираем реальные данные пользователя (email, username, avatar) через getMe()
         const user = await getMe();
         set({
           user,

@@ -51,14 +51,14 @@ export default function RootLayout({ children, modal }: RootLayoutProps) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className={robotoFont.variable}>
-        <AuthProvider>
-          <TanStackProvider>
+        <TanStackProvider>
+          <AuthProvider>
             <Header />
             {children}
             {modal}
             <Footer />
-          </TanStackProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </TanStackProvider>
       </body>
     </html>
   );

@@ -3,20 +3,27 @@
 import { useState } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useRouter } from "next/navigation";
+import { login as apiLogin } from "@/lib/api/clientApi";
 import css from "./SignInPage.module.css";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const login = useAuthStore((state) => state.login);
+  const setUser = useAuthStore((state) => state.setUser);
   const router = useRouter();
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     try {
       setError("");
-      await login({ email, password });
+
+      const user = await apiLogin({ email, password });
+
+      if (user) {
+        setUser(user);
+      }
+
       router.push("/profile");
     } catch {
       setError("Login error. Check your email and password.");

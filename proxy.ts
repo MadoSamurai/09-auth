@@ -1,23 +1,37 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { cookies } from "next/headers";
+import { checkSessionServer } from "@/lib/api/serverApi";
 
-export function proxy(request: NextRequest) {
+const privateRoutes = ["/profile", "/notes"];
+const publicRoutes = ["/sign-in", "/sign-up"];
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isPrivateAuthRoute =
-    pathname.startsWith("/profile") || pathname.startsWith("/notes/create");
+  const cookieStore = await cookies();
+  let accessToken = cookieStore.get("accessToken")?.value;
+  const refreshToken = cookieStore.get("refreshToken")?.value;
 
-  const isAuthRoute =
-    pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
+  if (!accessToken && refreshToken) {
+    try {
+      const user = await checkSessionServer();
+      if (user) {
+        accessToken = "active";
+      }
+    } catch (error) {
+      console.error("Session check failed in proxy:", error);
+    }
+  }
 
-  const isAuthenticated =
-    request.cookies.has("accessToken") || request.cookies.has("refreshToken");
+  const isPrivate = privateRoutes.some((route) => pathname.startsWith(route));
+  const isPublic = publicRoutes.some((route) => pathname.startsWith(route));
 
-  if (isPrivateAuthRoute && !isAuthenticated) {
+  if (isPrivate && !accessToken) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  if (isAuthRoute && isAuthenticated) {
+  if (isPublic && accessToken) {
     return NextResponse.redirect(new URL("/profile", request.url));
   }
 
@@ -25,5 +39,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/profile/:path*", "/sign-in", "/sign-up", "/notes/:path*"],
+  matcher: ["/profile/:path*", "/notes/:path*", "/sign-in", "/sign-up"],
 };

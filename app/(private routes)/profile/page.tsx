@@ -1,19 +1,16 @@
-"use client";
-
-import css from "./ProfilePage.module.css";
-import { useAuthStore } from "@/lib/store/authStore";
+import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Metadata } from "next";
+import { getMeServer } from "@/lib/api/serverApi";
+import css from "./ProfilePage.module.css";
 
-export default function ProfilePage() {
-  const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
-  const router = useRouter();
+export const metadata: Metadata = {
+  title: "NoteHub - Profile Page",
+  description: "User profile page",
+};
 
-  const handleLogout = async () => {
-    await logout();
-    router.push("/sign-in");
-  };
+export default async function ProfilePage() {
+  const user = await getMeServer();
 
   return (
     <main className={css.mainContent}>
@@ -26,7 +23,7 @@ export default function ProfilePage() {
         </div>
 
         <div className={css.avatarWrapper}>
-          <img
+          <Image
             src={user?.avatar || "https://placehold.co/120"}
             alt="User Avatar"
             width={120}

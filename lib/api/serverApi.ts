@@ -3,15 +3,15 @@ import { cookies } from "next/headers";
 import { User } from "@/types/user";
 import { FetchNotesParams, FetchNoteResponse, Note } from "@/types/note";
 
-export const checkSessionServer = async (): Promise<User | null> => {
+export const checkSessionServer = async () => {
   try {
     const cookieStore = await cookies();
-    const { data } = await axiosInstance.get<User>("/auth/session", {
+    const response = await axiosInstance.get("/auth/session", {
       headers: {
         Cookie: cookieStore.toString(),
       },
     });
-    return data;
+    return response;
   } catch {
     return null;
   }
