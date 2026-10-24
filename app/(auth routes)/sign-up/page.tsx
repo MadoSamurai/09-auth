@@ -1,25 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import css from "./SignUpPage.module.css";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useRouter } from "next/navigation";
+import { register as apiRegister } from "@/lib/api/clientApi";
+import css from "./SignUpPage.module.css";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const register = useAuthStore((state) => state.register);
+  const setUser = useAuthStore((state) => state.setUser);
   const router = useRouter();
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     try {
       setError("");
-      await register({ email, password });
+      const user = await apiRegister({ email, password });
+
+      if (user) {
+        setUser(user);
+      }
+
       router.push("/profile");
-    } catch {
-      setError("Registration error. This user may already exist.");
+    } catch (err: any) {
+      const errorMsg =
+        err.response?.data?.message ||
+        "Registration error. Please check your data.";
+      setError(errorMsg);
     }
   };
 
@@ -27,6 +36,7 @@ export default function SignUpPage() {
     <main className={css.mainContent}>
       <form className={css.form} onSubmit={handleSubmit}>
         <h1 className={css.formTitle}>Sign up</h1>
+
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
