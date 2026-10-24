@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { cookies } from "next/headers"; // Импортируем асинхронную функцию cookies
 import { checkSessionServer } from "@/lib/api/serverApi";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const cookieStore = request.cookies;
+
+  // Получаем куки через асинхронную функцию cookies() из next/headers
+  const cookieStore = await cookies();
 
   const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
 
   const isAuthRoute =
     pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
-  const isPrivateRoute = pathname.startsWith("/profile");
+
+  // Расширяем приватные маршруты, добавляя /notes
+  const isPrivateRoute =
+    pathname.startsWith("/profile") || pathname.startsWith("/notes");
 
   let isAuthenticated = !!accessToken;
 
@@ -51,5 +57,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/profile/:path*", "/sign-in", "/sign-up"],
+  // Обновляем матчер, чтобы он захватывал и профиль, и заметки
+  matcher: ["/profile/:path*", "/notes/:path*", "/sign-in", "/sign-up"],
 };
