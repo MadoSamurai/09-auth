@@ -1,10 +1,11 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote, type CreateNotePayLoad } from "@/lib/api";
 import css from "./NoteForm.module.css";
 import { useNoteDraft } from "@/lib/store/noteStore";
 import { ChangeEvent } from "react";
+import { CreateNotePayLoad } from "@/types/note";
+import { createNote } from "@/lib/api/clientApi";
 
 interface NoteFormProps {
   onCancel: () => void;

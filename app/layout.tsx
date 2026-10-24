@@ -5,6 +5,7 @@ import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
 import React from "react";
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,12 +25,12 @@ const robotoFont = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "08-zustand",
+  title: "NoteHub",
   description: "NoteHub app",
   openGraph: {
-    title: "08-zustand",
+    title: "NoteHub",
     description: "NoteHub app",
-    url: "https://08-zustand-zeta-mauve.vercel.app/",
+    url: "notehub url",
     images: [
       {
         url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
@@ -50,12 +51,14 @@ export default function RootLayout({ children, modal }: RootLayoutProps) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className={robotoFont.variable}>
-        <TanStackProvider>
-          <Header />
-          {children}
-          {modal}
-          <Footer />
-        </TanStackProvider>
+        <AuthProvider>
+          <TanStackProvider>
+            <Header />
+            {children}
+            {modal}
+            <Footer />
+          </TanStackProvider>
+        </AuthProvider>
       </body>
     </html>
   );

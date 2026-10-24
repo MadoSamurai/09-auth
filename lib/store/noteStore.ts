@@ -1,5 +1,4 @@
-import { NoteTag } from "@/types/note";
-import { CreateNotePayLoad } from "../api";
+import { CreateNotePayLoad, NoteTag } from "@/types/note";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

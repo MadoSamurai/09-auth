@@ -1,4 +1,6 @@
-import { fetchNotes, PER_PAGE } from "@/lib/api";
+import { fetchNotes } from "@/lib/api/clientApi";
+import { PER_PAGE } from "@/lib/api/api";
+
 import {
   dehydrate,
   HydrationBoundary,
